@@ -1,7 +1,7 @@
 // generic way of making lack of validation a type-error, not merely inconvenient.
 
 export type ValidationFnSig<S extends string> =
-	`___@requires_validator_for_${S}`;
+	`___@requires_${S}`;
 
 export type Valid<T, ValidatorNames extends string = "any"> = T & Record<ValidationFnSig<ValidatorNames>, never>;
 export type CollapseValids<T1, V1 extends string> = T1 extends
