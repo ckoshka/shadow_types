@@ -1,4 +1,4 @@
-import { Valid, Validator } from "./valid.ts";
+import { Valid, Validator } from "../valid.ts";
 
 Deno.test(() => {
 	type BookName = string;
