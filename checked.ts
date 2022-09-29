@@ -1,27 +1,28 @@
 // generic way of making lack of validation a type-error, not merely inconvenient.
 
-export type ValidationFnSig<S extends string> =
-	`___@requires_${S}`;
+export type ValidationFnSig<S extends string> = `___@requires_check_for_${S}`;
 
-export type Valid<T, ValidatorNames extends string = "unknown_validator"> = T & Record<ValidationFnSig<ValidatorNames>, never>;
+export type Checked<T, ValidatorNames extends string = "unknown_validator"> =
+	& T
+	& Record<ValidationFnSig<ValidatorNames>, never>;
 
-export type CollapseValids<T1, V1 extends string> = T1 extends
-	Valid<infer T2, infer V2> ? Valid<T2, V1 | V2> : Valid<T1, V1>;
+export type CollapseChecks<T1, V1 extends string> = T1 extends
+	Checked<infer T2, infer V2> ? Checked<T2, V1 | V2> : Checked<T1, V1>;
 
-export type ValidatorFn<T, Name extends string> = (
+export type CheckerFn<T, Name extends string> = (
 	a0: T,
-) => a0 is CollapseValids<Valid<T, Name>, Name>;
+) => a0 is CollapseChecks<Checked<T, Name>, Name>;
 
-export const Validator = <T, N extends string>(
+export const Checker = <T, N extends string>(
 	_name: N,
 	fn: (a0: T) => boolean,
 ) => {
 	return {
-		valid: fn as ValidatorFn<T, N>,
+		valid: fn as CheckerFn<T, N>,
 		and: <N2 extends string>(_newname: N2, newfn: (a0: T) => boolean) =>
-			Validator<T, N | N2>(_newname, (a0) => fn(a0) && newfn(a0)),
+			Checker<T, N | N2>(_newname, (a0) => fn(a0) && newfn(a0)),
 		or: <N2 extends string>(_newname: N2, newfn: (a0: T) => boolean) =>
-			Validator<T, N | N2>(_newname, (a0) => fn(a0) || newfn(a0)),
+			Checker<T, N | N2>(_newname, (a0) => fn(a0) || newfn(a0)),
 	};
 };
 // you should be able to map over validators. oh no it's a monad now
@@ -30,7 +31,7 @@ export const Validator = <T, N extends string>(
 // general principle: avoid erasing type information by creating convenient contexts for expressing
 // functional transformations/mappings that retain the appropriate type signature
 
-// over validators or validation results? should fn A -> B where A: 'some_valid_property' -> B: 'some_valid_property'? 
+// over validators or validation results? should fn A -> B where A: 'some_valid_property' -> B: 'some_valid_property'?
 // no this doesn't make sense outside of that context.
 // does this signature ever get erased?
 // yes - if we're passing it to a function which only expects A and not Valid<A>,
@@ -50,6 +51,9 @@ export const Validator = <T, N extends string>(
 // - checked internally -> fn A -> Result B
 // - checked externally fn Valid A -> B
 // USE OVERLOADS
+// no way of distinguishing btwn unchecked and checked internally via args
+// Unvalidated<A>
+// could rename to Checked or Unchecked
 // so Validator should provide a method that wraps fns?
 // how do you preserve documentation?
 
