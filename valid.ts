@@ -3,7 +3,8 @@
 export type ValidationFnSig<S extends string> =
 	`___@requires_${S}`;
 
-export type Valid<T, ValidatorNames extends string = "any"> = T & Record<ValidationFnSig<ValidatorNames>, never>;
+export type Valid<T, ValidatorNames extends string = "unknown_validator"> = T & Record<ValidationFnSig<ValidatorNames>, never>;
+
 export type CollapseValids<T1, V1 extends string> = T1 extends
 	Valid<infer T2, infer V2> ? Valid<T2, V1 | V2> : Valid<T1, V1>;
 
@@ -24,6 +25,39 @@ export const Validator = <T, N extends string>(
 	};
 };
 // you should be able to map over validators. oh no it's a monad now
-// could we make it so that different validator fns get reflected in the type signature when different kinds of validation are needed?
-// that would be more powerful, but slightly more annoying.
+// "and" doesn't capture the results of partial validations
+// i.e if one validator succeeded, that wouldn't be reflected in the result.
+// general principle: avoid erasing type information by creating convenient contexts for expressing
+// functional transformations/mappings that retain the appropriate type signature
+
+// over validators or validation results? should fn A -> B where A: 'some_valid_property' -> B: 'some_valid_property'? 
+// no this doesn't make sense outside of that context.
+// does this signature ever get erased?
+// yes - if we're passing it to a function which only expects A and not Valid<A>,
+// which then returns it as an A, we lose the validation sig
+// also add examples of:
+// - a standalone validator function that does its thing via A as Valid<A>
 // an either type whose valid or invalid paths get mapped accordingly?
+
+// what about aliases
+// what about cumulative validators?
+// general problem: seeing "A is not assignable to Valid<A>" will be annoying
+// to people who aren't aware of this library
+
+// several options?
+// fn A -> B becomes:
+// - unchecked: fn A -> B
+// - checked internally -> fn A -> Result B
+// - checked externally fn Valid A -> B
+// USE OVERLOADS
+// so Validator should provide a method that wraps fns?
+// how do you preserve documentation?
+
+// imagine a h.o fn that allows the caller to decide whether the fn should:
+// - throw an error - i.e, idiomatic imperative js
+// - return an { ok: T, err: E } - i.e, golang
+// - return an Either<T, E> - i.e haskell/rust
+// - provide a constructor for successes vs failures... - i.e anything, this is cool
+// - provide callbacks for err vs success - i.e idiomatic pre-promise era js
+// exposing some way of granularly ignoring or substituting specific errors?
+// promises?
