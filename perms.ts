@@ -11,8 +11,8 @@ export type Permissions =
 export type NeedsPermission<T, Perms extends Permissions[]> =
 	& T
 	& {
-		[K in keyof Perms & string]: Record<
-			`___@requires_permission_${K}`,
+		[K in keyof Perms]: Record<
+			`___@requires_permission_${Perms[K]}`,
 			never
 		>;
 	};
