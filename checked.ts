@@ -62,6 +62,7 @@ export const Checker = <T, N extends string>(
 // - return an { ok: T, err: E } - i.e, golang
 // - return an Either<T, E> - i.e haskell/rust
 // - provide a constructor for successes vs failures... - i.e anything, this is cool
+// ... but in practice required HKTs. fuck.
 // - provide callbacks for err vs success - i.e idiomatic pre-promise era js
 // exposing some way of granularly ignoring or substituting specific errors?
 // promises?

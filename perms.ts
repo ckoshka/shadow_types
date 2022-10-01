@@ -1,5 +1,6 @@
 export type Permissions =
 	| "allow-env"
+	| "allow-system"
 	| "allow-hrtime"
 	| "allow-net"
 	| "allow-ffi"
